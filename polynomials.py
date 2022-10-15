@@ -25,9 +25,12 @@ class PolynomialEquations:
 
     #Compute the derivatie of the polynomial equation 
     def derivate(self):
-        i = 0
-        for i in range(len(self.equation)):
-            self.equation[i] = [self.equation[i][0] * self.equation[i][1], self.equation[i][1]-1]
+        for eq in self.equation:
+            if eq[1] == 0:
+                self.equation.remove(eq)
+            else:
+                eq[0]*=eq[1]
+                eq[1]-=1
 
     #toString function
     def __str__(self):
@@ -44,8 +47,9 @@ class PolynomialEquations:
             
 
 
-equation = PolynomialEquations([[6, 3], [-3, 5], [1, 2]], 0)
+equation = PolynomialEquations([[6, 3], [-3, 2], [1, 2], [5, 0], [7, 20]], 0)
 print(equation.__str__())
 equation.derivate()
-print(equation.__str__())
+print(equation.equation)
+#print(equation.__str__())
 
