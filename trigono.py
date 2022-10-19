@@ -1,3 +1,4 @@
+import random as rand
 from numpy import *
 #Idée : Une équation est Somme: (b * fonctionTrigo(k * x))
 # Représenter une équation, c'est représenter un tableau de terme
@@ -14,6 +15,18 @@ class TrigoEquation:
     def __init__(self, equation, result):
             self.result = result
             self.equation = array(equation)
+    
+    def __init__(self, length):
+        equation = array([[rand.randint(-10, 10), int(rand.random()), rand.randint(1, 10)]])
+        nbrTerm = length
+
+        while nbrTerm > 1:
+            newTerm = array([rand.randint(-10, 10), rand.randint(0, 1), rand.randint(1, 10)])
+            equation = append(equation, [newTerm], axis=0)
+            nbrTerm -= 1
+
+        self.equation = equation
+        self.result = 0
 
     def get_equation(self):
         return self.equation
@@ -65,9 +78,3 @@ class TrigoEquation:
                     s += f' {self.equation[i][0]}cos({self.equation[i][2]}x) +'
             
         return s
-    
-    
-    
-    
-
-    
