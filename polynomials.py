@@ -1,3 +1,4 @@
+from numpy import *
 #Idée : Une équation est Somme: (b * Produit pow(x_i, k))
 # Représenter une équation, c'est représenter un tableau de terme
 # Représenter un terme est un tableau avec la constante b en premier élément et la puissance k en second élément du terme
@@ -7,30 +8,34 @@
 class PolynomialEquations:
 
 
-    def __init__(self, equation, result):
-        self.equation = equation
-        self.result = result
+    def __init__(self, equation):
+        self.equation = array(equation)
 
     def get_equation(self):
         return self.equation
-    
-    def get_result(self):
-        return self.result
 
     def set_equation(self, equation):
         self.equation = equation
 
-    def set_result(self, result):
-        self.result = result
-
     #Compute the derivatie of the polynomial equation 
     def derivate(self):
-        for eq in self.equation:
+        derivate = PolynomialEquations(self.equation.copy())
+        for eq in derivate.equation:
             if eq[1] == 0:
-                self.equation.remove(eq)
+                eq[0] = 0
             else:
                 eq[0]*=eq[1]
                 eq[1]-=1
+        
+        return derivate
+
+    def evaluate(self, x):
+        value = 0
+        for term in self.equation:
+            value = term[0] * x ** term[1]
+        
+        return value
+        
 
     #toString function
     def __str__(self):
@@ -47,9 +52,8 @@ class PolynomialEquations:
             
 
 
-equation = PolynomialEquations([[6, 3], [-3, 2], [1, 2], [5, 0], [7, 20]], 0)
-print(equation.__str__())
-equation.derivate()
-print(equation.equation)
-#print(equation.__str__())
+equation = PolynomialEquations([[6, 1], [-3, 2], [1, 0], [5, 1]])
+print(equation)
+print(equation.derivate())
+print(equation)
 

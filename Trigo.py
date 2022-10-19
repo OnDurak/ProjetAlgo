@@ -1,3 +1,4 @@
+from numpy import *
 #Idée : Une équation est Somme: (b * fonctionTrigo(k * x))
 # Représenter une équation, c'est représenter un tableau de terme
 # la fonction sinus est representé par la valeur 0 et la fonction sinus par la valeur 1
@@ -10,69 +11,61 @@
 
 class TrigoEquation:
 
-    def __init__(self, eq, result):
+    def __init__(self, equation, result):
             self.result = result
-            self.eq = eq
+            self.equation = array(equation)
 
     def get_equation(self):
-        return self.eq
-    
+        return self.equation
+
     def get_result(self):
         return self.result
 
     def set_equation(self, equation):
-        self.eq = equation
+        self.equation = equation
 
     def set_result(self, result):
         self.result = result
 
     # derive une equation trigonometrique
-    def trigo_derivative(self):
-
-        for i in range(len(self.eq)):
-                    
-                        
-            self.eq[i][0] *= self.eq[i][2]
-            if self.eq[i][1] == 0:
-                self.eq[i][1] = 1
+    def derivate(self):
+        derivate = TrigoEquation(self.equation.copy(), self.result)
+        for eq in derivate.equation:
+            if eq[1] == 0:
+                eq[0] *= eq[2]
+                eq[1] = 1
             else:
-                if self.eq[i][1] == 1:
-                    self.eq[i][1] = 0
-                    self.eq[i][0] = - self.eq[i][0]
-                else:
-                    print("the value takes the sinus or the cosine is not in accordance with the data representation model\n" ) 
-                            
-        return self.eq
-
-    # apelle les fonction pour dériver et evaluer une equation (à completer)
-    def Trigo(self, unknow):
-        derivateTrigo = self.trigo_derivative()
-        evaluatedTrigo = 0
-
+                eq[0] = -eq[0] * eq[2]
+                eq[1] = 0
         
-        evaluatedTrigo = self.evaluate_Trigo(unknow)
+        return derivate
 
-        return derivateTrigo
+    def evaluate(self, x):
+        value = 0
+        for eq in self.equation:
+            if eq[1] == 0:
+                value += eq[0] * sin(eq[2] * x)
+            else:
+                value += eq[0] * cos(eq[2] * x)
 
-    # Evalue une équation trigo (à completer)
-    def evaluate_Trigo(self, unknow):
-        sum = 0
-        for i in range(2):
-            sum += self.taylor(unknow)
+        return value
 
-        return sum
-
-    # developement de taylor pour evaluer la valeur d'un cos ou d'un sin (à completer)
-    def taylor(self, unknow):
-
-        return 0
-
-
-if __name__ == '__main__':
-    m = TrigoEquation([[3, 0, 7], [2, 1, 5], [2, 0, 5]], 9)
-    print(m.eq)
-    print("\n")
-    print(m.trigo_derivative())
+    def __str__(self):
+        s = ""
+        for i in range(len(self.equation)):
+            if i == len(self.equation)-1:
+                if self.equation[i][1] == 0:
+                    s += f' {self.equation[i][0]}sin({self.equation[i][2]}x) = {self.result}'
+                else:
+                    s += f' {self.equation[i][0]}cos({self.equation[i][2]}x) = {self.result}'
+            else:
+                if self.equation[i][1] == 0:
+                    s += f' {self.equation[i][0]}sin({self.equation[i][2]}x) +'
+                else:
+                    s += f' {self.equation[i][0]}cos({self.equation[i][2]}x) +'
+            
+        return s
+    
     
     
     
