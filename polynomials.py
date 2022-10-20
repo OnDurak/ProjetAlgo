@@ -1,5 +1,6 @@
 import random as rand 
 from numpy import *
+import copy
 #Idée : Une équation est Somme: (b * Produit pow(x_i, k))
 # Représenter une équation, c'est représenter un tableau de terme
 # Représenter un terme est un tableau avec la constante b en premier élément et la puissance k en second élément du terme
@@ -9,9 +10,11 @@ from numpy import *
 class PolynomialEquations:
 
     #equations manually generated
-    def __init__(self, equation):
-        self.equation = array(equation)
+    def __init__(self, equation, result):
+        self.equation = equation
+        self.result = result
 
+    '''
     #equations randomly generated
     def __init__(self, length):
         equation = array([[rand.randint(-10, 10), rand.randint(0, 10)]])
@@ -23,6 +26,7 @@ class PolynomialEquations:
             nbrTerm -= 1
 
         self.equation = equation
+    '''
 
     def get_equation(self):
         return self.equation
@@ -32,23 +36,24 @@ class PolynomialEquations:
 
     #Compute the derivatie of the polynomial equation 
     def derivate(self):
-        derivate = PolynomialEquations(self.equation.copy())
+        derivate = PolynomialEquations(copy.deepcopy(self.equation), 0)
+
         for eq in derivate.equation:
             if eq[1] == 0:
                 eq[0] = 0
             else:
-                eq[0]*=eq[1]
-                eq[1]-=1
-        
+                eq[0] *= eq[1]
+                eq[1] -= 1
+
         return derivate
 
 
     def evaluate(self, x):
         value = 0
         for term in self.equation:
-            value = term[0] * x ** term[1]
+            value += term[0] * pow(x, term[1])
         
-        return value
+        return value - self.result
         
 
     #toString function

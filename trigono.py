@@ -1,4 +1,5 @@
 import random as rand
+
 from numpy import *
 #Idée : Une équation est Somme: (b * fonctionTrigo(k * x))
 # Représenter une équation, c'est représenter un tableau de terme
@@ -7,15 +8,16 @@ from numpy import *
 # Exemple : [[3, 0, 1], [2, 1, 5], 5 ] => 3 sin(X) + 2 cos (5x) = 5
 
 # Supposer que les équations sont passées sous la forme décrite au dessus (ou faire une fonction transformant vers ce format (parse_equations))
-
+import copy
 
 
 class TrigoEquation:
 
     def __init__(self, equation, result):
-            self.result = result
-            self.equation = array(equation)
-    
+        self.equation = equation
+        self.result = result
+
+    '''
     def __init__(self, length):
         equation = array([[rand.randint(-10, 10), int(rand.random()), rand.randint(1, 10)]])
         nbrTerm = length
@@ -27,6 +29,7 @@ class TrigoEquation:
 
         self.equation = equation
         self.result = 0
+    '''
 
     def get_equation(self):
         return self.equation
@@ -42,7 +45,8 @@ class TrigoEquation:
 
     # derive une equation trigonometrique
     def derivate(self):
-        derivate = TrigoEquation(self.equation.copy(), self.result)
+        derivate = TrigoEquation(copy.deepcopy(self.equation), self.result)
+
         for eq in derivate.equation:
             if eq[1] == 0:
                 eq[0] *= eq[2]
