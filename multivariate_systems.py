@@ -5,6 +5,9 @@
 # Exemple : [ [5, [3, 0, 1] ] ,... ] => 5*(x^3 * 1 * z) + ...
 
 # Supposer que les équations sont passées sous la forme décrite au dessus (ou faire une fonction transformant vers ce format (parse_equations))
+
+import numpy as np
+
 class MultivariateEquations:
     COEFF = 0
     UNKNOWNS = 1
@@ -62,6 +65,14 @@ class MultivariateEquations:
 
         return sum
 
+
+    # Evalue une équation
+    def evaluate_eq(self, vector):
+        sum = self.evaluate(self.eq, vector)
+
+        return sum - self.result
+
+
     # Evalue un terme de l'équation avec un vecteur donnée (b * Produit pow(x_i, k_i), où k est un élément de vector)
     def evaluate_term(self, term, vector):
         if self.nbUnknowns != len(vector):
@@ -99,6 +110,13 @@ class MultivariateSystem:
 
         return J
 
+    def evaluate(self, vector):
+        F = []
+        for eq in self.sys:
+            F.append(eq.evaluate_eq(vector))
+
+        return F
+
 
 
 if __name__ == '__main__':
@@ -107,3 +125,4 @@ if __name__ == '__main__':
     print(m.partial_derivative_at([3, 3, 3]))
 
     print(MultivariateSystem(m, m, m).jacobian_matrix_at([3, 3, 3]))
+

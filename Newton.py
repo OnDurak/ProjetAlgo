@@ -8,9 +8,11 @@
 # ---------------------------------------------------------------------------
 import random as rand
 
+import math
 import numpy
 from polynomials import *
 from trigono import *
+from multivariate_systems import *
 # ---------------------------------------------------------------------------
 
 # Function that given function f and point a will try to find a value b such that f(a) * f(b) < 0
@@ -95,6 +97,24 @@ def newton_notsys(f, a, b):
         return newton_bisect_notsys(f, b, a)
 
 
+# Apply newton method to multivariate system of equations given the system s and the starting points stored in vector
+def newton_sys(s, vector):
+    if len(vector) != s.N:
+        raise Exception("vector size doesn't match number of unknowns to be used in Newton method")
+
+    for i in range(100):
+        J = s.jacobian_matrix_at(vector)
+        F = np.multiply(s.evaluate(vector), -1)
+        #maybe check if matrix are singular
+        X = np.linalg.solve(J, F)
+
+        vector = np.add(X, vector)
+
+    return vector
+
+
+
+
 def MenuPolynomial():
     ans = True
     while ans:
@@ -140,12 +160,56 @@ def MenuTrigono():
 
 
 if __name__ == '__main__':
+    N = 3
+    # x+y-z = 0 || 1+2-3 = 0
+    # xyz+3xy+5yz = 0 || 1*2*3 + 3*2 + 5 * 2 * 3 = 42
+    # x^2 + y^2 + z^2 = 0 || 1 + 4 + 9 = 14
+    '''
+    J = [ [[1], [1], [-1]],
+          [[yz + 3y], [xz + 3x + 5z], [xy+5y]],
+          [[2x], [2y], [2z]]
+        ]   
+    '''
+    m1 = MultivariateEquations([[1, [1, 0, 0]], [1, [0, 1, 0]], [-1, [0, 0, 1]]], 1, N)
+    m2 = MultivariateEquations([[2, [1, 0, 0]], [1, [0, 0, 1]]], 5, N)
+    m3 = MultivariateEquations([[1, [0, 2, 0]], [1, [0, 0, 2]]], 13, N)
+
+    s = MultivariateSystem(m1, m2, m3)
+    
+    J = s.jacobian_matrix_at([1, 2, 3])
+    for line in J:
+        for eq in line:
+            print(eq)
+        print("end of line\n")
+
+    F = np.multiply(s.evaluate([1, 2, 3]), -1)
+
+    print(F)
+
+    X = np.linalg.solve(J, F)
+    print(X)
+
+    print(np.add(X, [1, 2, 3]))
+
+    r = newton_sys(s, [2, -2, 0])
+    print(r)
+
+    s = MultivariateSystem(m1, m2, m3)
+    print(s.evaluate(r))
+    '''
+
+
+
+    
     p = TrigoEquation([[1, 1, 1], [-1,0,1]], 1)
 
     r = newton_notsys(p, -10, 5)
 
     print(r)
     print(p.evaluate(r))
+    '''
+
+
     '''
     ans=True
     while ans:
