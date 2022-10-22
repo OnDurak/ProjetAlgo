@@ -1,32 +1,21 @@
-import random as rand 
-from numpy import *
-import copy
-#Idée : Une équation est Somme: (b * Produit pow(x_i, k))
-# Représenter une équation, c'est représenter un tableau de terme
-# Représenter un terme est un tableau avec la constante b en premier élément et la puissance k en second élément du terme
-# Exemple: [[2, 3], [-3, 5], [1, 2]] => 2(x^3) - 3(x^5) + x^2
+# Idea : an equation is a Sum: (b * pow(x_i, k))
+# Representing an equation is representing an array of terms
+# Representing a term is representing an array with the coefficient b as the first element and the x exponent value
+# as the second element
+# Example : [[2, 3], [-3, 5], [1, 2]] => 2(x^3) - 3(x^5) + x^2
 
-# Supposer que les équations sont passées sous la forme décrite au dessus (ou faire une fonction transformant vers ce format (parse_equations))
+# We suppose that the equation given to this class are represented using this encoding
+from copy import deepcopy
+import random as rand
+
+
 class PolynomialEquations:
+    B_INDEX = 0
+    POW_INDEX = 1
 
-    #equations manually generated
     def __init__(self, equation, result):
         self.equation = equation
         self.result = result
-
-    '''
-    #equations randomly generated
-    def __init__(self, length):
-        equation = array([[rand.randint(-10, 10), rand.randint(0, 10)]])
-        nbrTerm = length
-
-        while nbrTerm > 1:
-            newTerm = array([rand.randint(-10, 10), rand.randint(0, 10)])
-            equation = append(equation, [newTerm], axis=0)
-            nbrTerm -= 1
-
-        self.equation = equation
-    '''
 
     def get_equation(self):
         return self.equation
@@ -34,35 +23,44 @@ class PolynomialEquations:
     def set_equation(self, equation):
         self.equation = equation
 
-    #Compute the derivatie of the polynomial equation 
+    # Function returning the derivative of the calling equation
     def derivate(self):
-        derivate = PolynomialEquations(copy.deepcopy(self.equation), 0)
+        derivative = PolynomialEquations(deepcopy(self.equation), 0)
 
-        for eq in derivate.equation:
-            if eq[1] == 0:
-                eq[0] = 0
+        for eq in derivative.equation:
+            if eq[self.POW_INDEX] == 0:
+                eq[self.B_INDEX] = 0
             else:
-                eq[0] *= eq[1]
-                eq[1] -= 1
+                eq[self.B_INDEX] *= eq[self.POW_INDEX]
+                eq[self.POW_INDEX] -= 1
 
-        return derivate
+        return derivative
 
-
+    # Function evaluating an equation at point x
     def evaluate(self, x):
         value = 0
         for term in self.equation:
-            value += term[0] * pow(x, term[1])
+            value += term[self.B_INDEX] * pow(x, term[self.POW_INDEX])
         
         return value - self.result
-        
 
-    #toString function
+    # Class method that returns a random equation given the number of terms
+    @classmethod
+    def random_equation(cls, n):
+        eq = []
+        for i in range(n):
+            eq.append([rand.randint(-10, 10), rand.randint(0, 10)])
+
+        return PolynomialEquations(eq, rand.randint(-10, 10))
+
+    # Function printing the equation in a pretty way
     def __str__(self):
         s = ""
+        SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
         for i in range(len(self.equation)):
+            x = f'x{self.equation[i][1]}'.translate(SUP)
             if i == len(self.equation) - 1:
-                s += f'{self.equation[i][0]}x^{self.equation[i][1]} = 0\n'
+                s += f'{self.equation[i][0]}{x} = {self.result}\n'
             else:
-                s += f'{self.equation[i][0]}x^{self.equation[i][1]} + '
+                s += f'{self.equation[i][0]}{x} + '
         return s
-        

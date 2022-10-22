@@ -4,20 +4,24 @@
 # version ='1.0'
 # coding=utf-8
 # ---------------------------------------------------------------------------
-# This module contains the implementation of the newton raphson algorithm"
+# This module contains the implementation of the Newton-Raphson algorithm"
 # ---------------------------------------------------------------------------
 import random as rand
 
 import math
-import numpy
+import numpy as np
+import random
 from polynomials import *
 from trigono import *
 from multivariate_systems import *
+
 # ---------------------------------------------------------------------------
+# Start of functions related to newton-method for simple equation
+
 
 # Function that given function f and point a will try to find a value b such that f(a) * f(b) < 0
 def bisect_starting_point(f, a):
-    a_sign = numpy.sign(a)
+    a_sign = np.sign(a)
 
     # If after 20 iterations we couldn't find a value for b of opposite sign we stop
     for i in range(20):
@@ -25,37 +29,38 @@ def bisect_starting_point(f, a):
         b = rand.random() * math.pow(10, i % 5)
 
         # using -b and b to test with f
-        if numpy.sign(f.evaluate(-b)) != a_sign:
+        if np.sign(f.evaluate(-b)) != a_sign:
             return -b
-        elif numpy.sign(f.evaluate(b)) != a_sign:
+        elif np.sign(f.evaluate(b)) != a_sign:
             return b
 
     return None
 
 
+# Function computing a step of the Newton method
 def newton_step(f, deriv, a):
-    return a - f.evaluate(a) / deriv.evaluate(a)
+    x = deriv.evaluate(a)
+    if x == 0:
+        return None
+    return a - f.evaluate(a) / x
 
 
+# Function computing a step of the bisection method
 def bisection_step(a, b):
     return (a+b)/2
 
 
 # Function used only if f(a) * f(b) < 0 and a < b, this precondition must be respected
 def newton_bisect_notsys(f, a, b):
-    # We chose the value closer to 0 for the first iteration of Newton
-    if abs(f.evaluate(a)) < abs(f.evaluate(b)):
-        x = a
-    else:
-        x = b
+    # We chose bisection as the first value of x
+    x = (a+b)/2
 
     deriv = f.derivate()
 
-    for i in range(40):
+    while abs(f.evaluate(x)) > 0.00000001:
         x = newton_step(f, deriv, x)
 
-        # If x is outside of a,b using newton, this mean newton diverges, thus we switch to bisection
-        if x < a or x > b:
+        if x is None or x <= a or x >= b:
             x = bisection_step(a, b)
 
         # Updating [a,b] for the potential next bisection step
@@ -71,8 +76,11 @@ def newton_bisect_notsys(f, a, b):
 def naive_newton_notsys(f, a):
     deriv = f.derivate()
 
-    for i in range(20):
+    # No guarantee of convergence so we're forced to iterate for a given number of steps, else we risk infinite loop
+    for i in range(40):
         a = newton_step(f, deriv, a)
+        if a is None:
+            return None
 
     return a
 
@@ -86,8 +94,8 @@ def newton_notsys(f, a, b):
         b = bisect_starting_point(f, a)
 
         if b is None:
-            print("couldn't find suitable values to use for bisection, naive Newton method to be used...")
-            return naive_newton_notsys(f, a)
+            print("couldn't find suitable values to use for bisection, naive Newton method to be used with random starting point...")
+            return naive_newton_notsys(f, random.randint(-100, 100))
 
         print("suitable values could be found, Newton-Bisection method to be used...")
 
@@ -95,6 +103,12 @@ def newton_notsys(f, a, b):
         return newton_bisect_notsys(f, a, b)
     else:
         return newton_bisect_notsys(f, b, a)
+
+# End of functions related to newton-method for simple equation
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Start of functions related to newton-method for multivariate systems
 
 
 # Apply newton method to multivariate system of equations given the system s and the starting points stored in vector
@@ -104,129 +118,157 @@ def newton_sys(s, vector):
 
     for i in range(100):
         J = s.jacobian_matrix_at(vector)
-        F = np.multiply(s.evaluate(vector), -1)
+        F = np.multiply(s.evaluate(vector), 1)
         #maybe check if matrix are singular
         X = np.linalg.solve(J, F)
 
-        vector = np.add(X, vector)
+        vector = np.subtract(vector, X)
 
     return vector
 
+# End of functions related to newton-method for multivariate systems
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Start of functions related to handling input and user interface
 
 
-
-def MenuPolynomial():
+def menu_polynomial():
     ans = True
+
     while ans:
         print(""" 
         1.Random equation
-        2.Input equation
+        2.Load file
         """)
+
         ans = input("What would you like to do? ")
+
         if ans == "1":
             length = input("How many terms would you like in the equation? ")
-            randomEquation = PolynomialEquations(int(length))
-            print(randomEquation)
+            random_equation = PolynomialEquations.random_equation(int(length))
+            print("generated equation :")
+            print(random_equation)
+            
+            a = int(input("Enter first starting point for Newton-Bisect method (a)"))
+            b = int(input("Enter second starting point for Newton-Bisect method (b)"))
+            
+            print("Solving...")
+            r = newton_notsys(random_equation, a, b)
+            if r is None:
+                print("Couldn't find roots for given equation...")
+            else:
+                print("Found solution for :" + str(random_equation))
+                print("x = " + str(r))
+                print("Value of equation for found x : " + str(random_equation.evaluate(r)))
             return
 
         elif ans == "2":
-            print("random")
+            # todo
             return
             
         else:
             print("\n Not Valid Choice Try again\n\n")
 
 
-def MenuTrigono():
+def menu_trigono():
     ans = True
+
     while ans:
         print(""" 
         1.Random equation
-        2.Input equation
+        2.Load file
         """)
+
         ans = input("What would you like to do? ")
+
         if ans == "1":
             length = input("How many terms would you like in the equation? ")
-            randomEquation = TrigoEquation(int(length))
-            print(randomEquation)
+            random_equation = TrigoEquation.random_equation(int(length))
+            print("generated equation :")
+            print(random_equation)
+
+            a = int(input("Enter first starting point for Newton-Bisect method (a)"))
+            b = int(input("Enter second starting point for Newton-Bisect method (b)"))
+
+            print("Solving...")
+            r = newton_notsys(random_equation, a, b)
+            if r is None:
+                print("Couldn't find roots for given equation...")
+            else:
+                print("Found solution for :" + str(random_equation))
+                print("x = " + str(r))
+                print("Value of equation for found x : " + str(random_equation.evaluate(r)))
             return
 
         elif ans == "2":
-            print("random")
+            # todo
             return
             
         else:
             print("\n Not Valid Choice Try again\n\n")
+
+
+def menu_system():
+    ans = True
+
+    while ans:
+        print(""" 
+            1.Random system
+            2.Load file
+            """)
+
+        ans = input("What would you like to do? ")
+
+        if ans == "1":
+            length = int(input("How many unknowns/equations would you like in the system? "))
+            random_system = MultivariateSystem.random_system(length)
+            print("generated system :")
+            print(random_system)
+
+            vector = []
+            for i in range(length):
+                vector.append(int(input(f'Enter the {i}-th value for the starting vector')))
+
+            print("Given vector = " + str(vector))
+            print("Solving...")
+            r = newton_sys(random_system, vector)
+            print("Found solution for system")
+            print("x = " + str(r))
+            print("Value of equation for found solution : " + str(random_system.evaluate(r)))
+            return
+
+        elif ans == "2":
+            # todo
+            return
+
+        else:
+            print("\n Not Valid Choice Try again\n\n")
+
+# End of functions related to handling input and user interface
+# ---------------------------------------------------------------------------
 
 
 if __name__ == '__main__':
-    N = 3
-    # x+y-z = 0 || 1+2-3 = 0
-    # xyz+3xy+5yz = 0 || 1*2*3 + 3*2 + 5 * 2 * 3 = 42
-    # x^2 + y^2 + z^2 = 0 || 1 + 4 + 9 = 14
-    '''
-    J = [ [[1], [1], [-1]],
-          [[yz + 3y], [xz + 3x + 5z], [xy+5y]],
-          [[2x], [2y], [2z]]
-        ]   
-    '''
-    m1 = MultivariateEquations([[1, [1, 0, 0]], [1, [0, 1, 0]], [-1, [0, 0, 1]]], 1, N)
-    m2 = MultivariateEquations([[2, [1, 0, 0]], [1, [0, 0, 1]]], 5, N)
-    m3 = MultivariateEquations([[1, [0, 2, 0]], [1, [0, 0, 2]]], 13, N)
+    ans = True
 
-    s = MultivariateSystem(m1, m2, m3)
-    
-    J = s.jacobian_matrix_at([1, 2, 3])
-    for line in J:
-        for eq in line:
-            print(eq)
-        print("end of line\n")
-
-    F = np.multiply(s.evaluate([1, 2, 3]), -1)
-
-    print(F)
-
-    X = np.linalg.solve(J, F)
-    print(X)
-
-    print(np.add(X, [1, 2, 3]))
-
-    r = newton_sys(s, [2, -2, 0])
-    print(r)
-
-    s = MultivariateSystem(m1, m2, m3)
-    print(s.evaluate(r))
-    '''
-
-
-
-    
-    p = TrigoEquation([[1, 1, 1], [-1,0,1]], 1)
-
-    r = newton_notsys(p, -10, 5)
-
-    print(r)
-    print(p.evaluate(r))
-    '''
-
-
-    '''
-    ans=True
     while ans:
-        print ("""
+        print("""
         1.Approximate solution for polynomial equations
         2.Approximate solution for trigonometric equations
+        3.Approximate solution for system of equations
         4.Exit/Quit
         """)
-        ans=input("What would you like to do? ") 
-        if ans=="1": 
-            MenuPolynomial()
-        elif ans=="2":
-            MenuTrigono()
-    
-        elif ans=="4":
+
+        ans = input("What would you like to do? ")
+
+        if ans == "1":
+            menu_polynomial()
+        elif ans == "2":
+            menu_trigono()
+        elif ans == "3":
+            menu_system()
+        elif ans == "4":
             ans = False
-    
-        elif ans !="":
+        elif ans != "":
             print("\n Not Valid Choice Try again\n\n")
-    '''

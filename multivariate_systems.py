@@ -1,63 +1,61 @@
-# coding=utf-8
-#Idée : Une équation est Somme: (b * Produit pow(x_i, k))
-# Représenter une équation, c'est représenter un tableau de terme
-# Représenter un terme est un tableau avec la constante b, est un tableau avec les différentes variables et leur puissance
-# Exemple : [ [5, [3, 0, 1] ] ,... ] => 5*(x^3 * 1 * z) + ...
+# Idea : an equation is a Sum: (b * Product pow(x_j, kij))
+# Representing an equation is representing an array of terms
+# Representing a term is representing an array with the coefficient b as the first element and an array containing
+# all the exponent value of each unknowns for the term as the second element
+# Example : [ [5, [3, 0, 1] ] ,... ] => 5*(x^3 * 1 * z) + ...
 
-# Supposer que les équations sont passées sous la forme décrite au dessus (ou faire une fonction transformant vers ce format (parse_equations))
+# We suppose that the equation given to this class are represented using this encoding
+import random as rand
 
-import numpy as np
 
 class MultivariateEquations:
-    COEFF = 0
-    UNKNOWNS = 1
+    B_INDEX = 0
+    POW_INDEX = 1
 
     def __init__(self, eq, result, nbUnknowns):
         self.result = result
         self.nbUnknowns = nbUnknowns
         self.eq = eq
+        self.J = self.__partial_derivative()
 
-        if not all(len(T[self.UNKNOWNS]) is self.nbUnknowns for T in self.eq):
+        if not all(len(T[self.POW_INDEX]) is self.nbUnknowns for T in self.eq):
             raise Exception("Error: terms have different number of unknowns")
 
-    # Itérer pour le nombre de variables, itérer pour le nombre de terme, pour chaque terme dériver par rapport à la ième variable
-    # Calcule la matrice jaocbienne sans évaluer (symbolique)
-    def partial_derivative(self):
+    # Create the jacobian vector of the equation symbolically (private func because we build this in the constructor)
+    def __partial_derivative(self):
         partialDerivatives = []
 
         for i in range(self.nbUnknowns):
             currTerm = []
             for term in self.eq:
-                currTerm.append(self.derivate(term, i))
+                currTerm.append(self.__derivate(term, i))
             partialDerivatives.append(currTerm)
 
         return partialDerivatives
 
-    # Calcule la matrice jacobienne pour un vecteur donnée
+    # Function returning the derivative with respect to unknownIndex of the calling equation (private func because only
+    # used internally)
+    def __derivate(self, term, unknownIndex):
+        newTerm = term.copy()
+        newTerm[self.POW_INDEX] = newTerm[self.POW_INDEX].copy()
+
+        newTerm[self.B_INDEX] *= newTerm[self.POW_INDEX][unknownIndex]
+
+        if newTerm[self.POW_INDEX][unknownIndex] > 0:
+            newTerm[self.POW_INDEX][unknownIndex] -= 1
+
+        return newTerm
+
+    # Compute the jacobian vector of the equation given a vector (numerical value)
     def partial_derivative_at(self, vector):
-        jacobianVector = self.partial_derivative()
         evaluatedJacVector = []
 
-        for eq in jacobianVector:
+        for eq in self.J:
             evaluatedJacVector.append(self.evaluate(eq, vector))
 
         return evaluatedJacVector
 
-    # Dérive un terme de l'équation par rapport à l'inconnu numéro unknownIndex
-    def derivate(self, term, unknownIndex):
-        newTerm = term.copy()
-        newTerm[self.UNKNOWNS] = newTerm[self.UNKNOWNS].copy()
-
-        unknownCurrPower = newTerm[self.UNKNOWNS][unknownIndex]
-
-        if newTerm[self.UNKNOWNS][unknownIndex] > 0:
-            newTerm[self.UNKNOWNS][unknownIndex] -= 1
-
-        newTerm[self.COEFF] *= unknownCurrPower
-
-        return newTerm
-
-    # Evalue une équation en un vecteur (Somme: (b * Produit pow(x_i, k)))
+    # Evaluate the equation given a vector Sum: (b * Product pow(x_i, k_i)), where x_i belongs to vector
     def evaluate(self, eq, vector):
         sum = 0
         for term in eq:
@@ -65,27 +63,57 @@ class MultivariateEquations:
 
         return sum
 
-
-    # Evalue une équation
+    # Evaluate the equation given a vector (Sum: (b * Product pow(x_i, k_i))) - c, where x_i belongs to vector
     def evaluate_eq(self, vector):
         sum = self.evaluate(self.eq, vector)
 
         return sum - self.result
 
-
-    # Evalue un terme de l'équation avec un vecteur donnée (b * Produit pow(x_i, k_i), où k est un élément de vector)
+    # Evaluate a term of the equation given a vector (b * Product pow(x_i, k_i), where x_i belongs to vector
     def evaluate_term(self, term, vector):
         if self.nbUnknowns != len(vector):
             raise Exception("cannot evaluate a term : input vector length doesn't match unknowns number")
 
-        unknownProduct = 1
+        product = 1
         for i in range(self.nbUnknowns):
-            unknownProduct *= pow(vector[i], term[self.UNKNOWNS][i])
+            product *= pow(vector[i], term[self.POW_INDEX][i])
 
-        return term[self.COEFF] * unknownProduct
+        return term[self.B_INDEX] * product
+
+    # Class method that returns a random equation given the number of terms and unknowns
+    @classmethod
+    def random_equation(cls, n, N):
+        eq = []
+        for i in range(n):
+            exp = rand.sample(range(0, 10), N)
+            eq.append([rand.randint(-10, 10), exp])
+
+        return MultivariateEquations(eq, rand.randint(-10, 10), N)
+
+    # Function printing the equation in a pretty way
+    def __str__(self):
+        s = ""
+        n = len(self.eq)
+        SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+        SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+
+        for i in range(n):
+            exp = ""
+            k = 0
+            for j in self.eq[i][1]:
+                term = f'x{k}'.translate(SUB)
+                term = f'{term}{j} '.translate(SUP)
+                exp += term
+                k += 1
+            if i == n - 1:
+                s += f'{self.eq[i][0]}({exp}) = {self.result}\n'
+            else:
+                s += f'{self.eq[i][0]}({exp}) + '
+
+        return s
 
 
-
+# Class storing instances of MultivariateEquations in an array as well as implementing functions related to systems
 class MultivariateSystem:
 
     def __init__(self, *eq):
@@ -99,7 +127,7 @@ class MultivariateSystem:
     def jacobian_matrix(self):
         J = []
         for eq in self.sys:
-            J.append(eq.partial_derivative())
+            J.append(eq.J)
 
         return J
 
@@ -117,12 +145,25 @@ class MultivariateSystem:
 
         return F
 
+    # Class method that returns a random system given the number n of unknowns/equations
+    @classmethod
+    def random_system(cls, n):
+        sys = []
+        for i in range(n):
+            sys.append(MultivariateEquations.random_equation(rand.randint(int(n/2), n), n))
 
+        m = MultivariateSystem()
+        m.N = n
+        m.sys = sys
 
-if __name__ == '__main__':
-    m = MultivariateEquations([[4, [0, 2, 3]], [4, [1, 3, 2]]], 9, 3)
+        return m
 
-    print(m.partial_derivative_at([3, 3, 3]))
+    # Function printing the system in a pretty way
+    def __str__(self):
+        s = ""
+        i = 0
+        for eq in self.sys:
+            s += str(i) + " : " + str(eq) + "\n"
+            i += 1
 
-    print(MultivariateSystem(m, m, m).jacobian_matrix_at([3, 3, 3]))
-
+        return s

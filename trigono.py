@@ -1,35 +1,27 @@
-import random as rand
+# Idea : an equation is a Sum: (b * trig_function(k * x))
+# Representing an equation is representing an array of terms
+# The sin function is represented by 0 and the cos function is represented by 1
+# Thus a term is an array with the coefficient b as the first element, the function value as the second element
+# and the coefficient k as the last element
+# Example : [[3, 0, 1], [2, 1, 5], 5 ] => 3 sin(X) + 2 cos (5x) = 5
 
+# We suppose that the equation given to this class are represented using this encoding
 from numpy import *
-#Idée : Une équation est Somme: (b * fonctionTrigo(k * x))
-# Représenter une équation, c'est représenter un tableau de terme
-# la fonction sinus est representé par la valeur 0 et la fonction sinus par la valeur 1
-# Représenter un terme est un tableau avec la constante b en premier élément et la fonction trigonometrique  en second élément et la constante k en troisieme du terme
-# Exemple : [[3, 0, 1], [2, 1, 5], 5 ] => 3 sin(X) + 2 cos (5x) = 5
-
-# Supposer que les équations sont passées sous la forme décrite au dessus (ou faire une fonction transformant vers ce format (parse_equations))
-import copy
+from copy import deepcopy
+import random as rand
 
 
 class TrigoEquation:
+    SIN = 0
+    COS = 1
+
+    B_INDEX = 0
+    FUN_INDEX = 1
+    K_INDEX = 2
 
     def __init__(self, equation, result):
         self.equation = equation
         self.result = result
-
-    '''
-    def __init__(self, length):
-        equation = array([[rand.randint(-10, 10), int(rand.random()), rand.randint(1, 10)]])
-        nbrTerm = length
-
-        while nbrTerm > 1:
-            newTerm = array([rand.randint(-10, 10), rand.randint(0, 1), rand.randint(1, 10)])
-            equation = append(equation, [newTerm], axis=0)
-            nbrTerm -= 1
-
-        self.equation = equation
-        self.result = 0
-    '''
 
     def get_equation(self):
         return self.equation
@@ -43,30 +35,41 @@ class TrigoEquation:
     def set_result(self, result):
         self.result = result
 
-    # derive une equation trigonometrique
+    # Function returning the derivative of the calling equation
     def derivate(self):
-        derivate = TrigoEquation(copy.deepcopy(self.equation), self.result)
+        derivative = TrigoEquation(deepcopy(self.equation), 0)
 
-        for eq in derivate.equation:
-            if eq[1] == 0:
-                eq[0] *= eq[2]
-                eq[1] = 1
+        for eq in derivative.equation:
+            if eq[self.FUN_INDEX] == self.SIN:
+                eq[self.B_INDEX] *= eq[self.K_INDEX]
+                eq[self.FUN_INDEX] = self.COS
             else:
-                eq[0] = -eq[0] * eq[2]
-                eq[1] = 0
+                eq[self.B_INDEX] = -eq[self.B_INDEX] * eq[self.K_INDEX]
+                eq[self.FUN_INDEX] = self.SIN
         
-        return derivate
+        return derivative
 
+    # Function evaluating an equation at point x
     def evaluate(self, x):
         value = 0
         for eq in self.equation:
-            if eq[1] == 0:
-                value += eq[0] * sin(eq[2] * x)
+            if eq[self.FUN_INDEX] == self.SIN:
+                value += eq[self.B_INDEX] * sin(eq[self.K_INDEX] * x)
             else:
-                value += eq[0] * cos(eq[2] * x)
+                value += eq[self.B_INDEX] * cos(eq[self.K_INDEX] * x)
 
         return value
 
+    # Class method that returns a random equation given the number of terms
+    @classmethod
+    def random_equation(cls, n):
+        eq = []
+        for i in range(n):
+            eq.append([rand.randint(-10, 10), rand.randint(0, 1), rand.randint(0, 10)])
+
+        return TrigoEquation(eq, rand.randint(-n, n))
+
+    # Function printing the equation in a pretty way
     def __str__(self):
         s = ""
         for i in range(len(self.equation)):
