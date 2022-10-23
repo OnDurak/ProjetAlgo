@@ -49,6 +49,20 @@ class TrigoEquation:
         
         return derivative
 
+    def read_equation_trigo(file_equation):
+
+        res = file_equation.split('; ')
+        result = res.pop()
+        result = int(result)
+        for i in range(len(res)):
+            res[i] = res[i].strip('][').split(',')
+            res[i][0] = int(res[i][0])
+            res[i][1] = int(res[i][1])
+            res[i][2] = int(res[i][2])
+
+        trigoEQ = res
+        return TrigoEquation(trigoEQ, result)
+
     # Function evaluating an equation at point x
     def evaluate(self, x):
         value = 0

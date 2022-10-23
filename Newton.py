@@ -150,8 +150,8 @@ def menu_polynomial():
             print("generated equation :")
             print(random_equation)
             
-            a = int(input("Enter first starting point for Newton-Bisect method (a)"))
-            b = int(input("Enter second starting point for Newton-Bisect method (b)"))
+            a = int(input("Enter first starting point for Newton-Bisect method (a) "))
+            b = int(input("Enter second starting point for Newton-Bisect method (b) "))
             
             print("Solving...")
             r = newton_notsys(random_equation, a, b)
@@ -164,7 +164,24 @@ def menu_polynomial():
             return
 
         elif ans == "2":
-            # todo
+            NameFile = input("please enter the file name")
+            file = open(NameFile,'r')
+            #file_equation = file.readline()
+            a = int(input("Enter first starting point for Newton-Bisect method (a) "))
+            b = int(input("Enter second starting point for Newton-Bisect method (b) "))
+            for line in file:
+
+                polyEQ = PolynomialEquations.read_equation_poly(line)
+                print(polyEQ)
+                print("Solving...")
+                r = newton_notsys(polyEQ, a, b)
+                if r is None:
+                    print("Couldn't find roots for given equation...")
+                else:
+                    print("Found solution for :" + str(polyEQ))
+                    print("x = " + str(r))
+                    print("Value of equation for found x : " + str(polyEQ.evaluate(r)))
+            file.close()
             return
             
         else:
@@ -202,7 +219,24 @@ def menu_trigono():
             return
 
         elif ans == "2":
-            # todo
+            NameFile = input("please enter the file name")
+            file = open(NameFile,'r')
+            #file_equation = file.readline()
+            a = int(input("Enter first starting point for Newton-Bisect method (a)"))
+            b = int(input("Enter second starting point for Newton-Bisect method (b)"))
+            for line in file:
+
+                TrigoEQ = TrigoEquation.read_equation_trigo(line)
+                print(TrigoEQ)
+                print("Solving...")
+                r = newton_notsys(TrigoEQ, a, b)
+                if r is None:
+                    print("Couldn't find roots for given equation...")
+                else:
+                    print("Found solution for :" + str(TrigoEQ))
+                    print("x = " + str(r))
+                    print("Value of equation for found x : " + str(TrigoEQ.evaluate(r)))
+            file.close()
             return
             
         else:
@@ -239,7 +273,24 @@ def menu_system():
             return
 
         elif ans == "2":
-            # todo
+            NameFile = input("please enter the file name")
+            file = open(NameFile,'r')
+            #file_equation = file.readline()
+            a = int(input("Enter first starting point for Newton-Bisect method (a) "))
+            b = int(input("Enter second starting point for Newton-Bisect method (b) "))
+            for line in file:
+                
+                polyEQ = PolynomialEquations.read_equation_poly(line, file)
+                print(polyEQ)
+                print("Solving...")
+                r = newton_notsys(polyEQ, a, b)
+                if r is None:
+                    print("Couldn't find roots for given equation...")
+                else:
+                    print("Found solution for :" + str(polyEQ))
+                    print("x = " + str(r))
+                    print("Value of equation for found x : " + str(polyEQ.evaluate(r)))
+            file.close()
             return
 
         else:

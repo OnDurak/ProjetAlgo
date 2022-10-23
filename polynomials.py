@@ -36,6 +36,19 @@ class PolynomialEquations:
 
         return derivative
 
+    def read_equation_poly(file_equation):
+
+        res = file_equation.split('; ')
+        result = res.pop()
+        result = int(result)
+        for i in range(len(res)):
+            res[i] = res[i].strip('][').split(',')
+            res[i][0] = int(res[i][0])
+            res[i][1] = int(res[i][1])
+
+        polyEq = res
+        return PolynomialEquations(polyEq, result)
+
     # Function evaluating an equation at point x
     def evaluate(self, x):
         value = 0
@@ -50,8 +63,10 @@ class PolynomialEquations:
         eq = []
         for i in range(n):
             eq.append([rand.randint(-10, 10), rand.randint(0, 10)])
+        print(eq)
 
         return PolynomialEquations(eq, rand.randint(-10, 10))
+
 
     # Function printing the equation in a pretty way
     def __str__(self):
