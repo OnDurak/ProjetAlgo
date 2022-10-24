@@ -55,19 +55,21 @@ class MultivariateEquations:
 
         return evaluatedJacVector
 
-    def read_equation_poly(nbrEq, file):
-        for i in range(int(nbrEq)):
-            file_equation = 
+    def read_multi_eq(file, NbreEq):
+        file_equation = file.readline()
         res = file_equation.split('; ')
         result = res.pop()
         result = int(result)
         for i in range(len(res)):
-            res[i] = res[i].strip('][').split(',')
+            res[i] =  res[i].split('* ')
+            res[i][1] = res[i][1].strip('][').split(',')
+            
             res[i][0] = int(res[i][0])
-            res[i][1] = int(res[i][1])
-
-        polyEq = res
-        return PolynomialEquations(polyEq, result)
+            for j in range(NbreEq):
+                res[i][1][j] = int(res[i][1][0])
+                res[i][1][j] = int(res[i][1][1])
+        MultiEq = res
+        return MultivariateEquations(MultiEq, result, NbreEq)
 
     # Evaluate the equation given a vector Sum: (b * Product pow(x_i, k_i)), where x_i belongs to vector
     def evaluate(self, eq, vector):
@@ -151,6 +153,19 @@ class MultivariateSystem:
             J.append(eq.partial_derivative_at(vector))
 
         return J
+
+
+    def read_system(nbrEq, file):
+
+        system = []
+        for i in range(nbrEq):
+            system.append(MultivariateEquations.read_multi_eq(file, nbrEq))
+        
+        m = MultivariateSystem()
+        m.N = nbrEq
+        m.sys = system
+            
+        return m
 
     def evaluate(self, vector):
         F = []
