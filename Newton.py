@@ -116,7 +116,9 @@ def naive_newton_notsys(f, a):
         if a is None:
             return None, None
         steps.append(step)
-
+    if abs(f.evaluate(a)) < 0.001:
+        return None, None
+        
     return a, steps
 
 

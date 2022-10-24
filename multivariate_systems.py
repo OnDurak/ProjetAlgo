@@ -66,9 +66,9 @@ class MultivariateEquations:
             
             res[i][0] = int(res[i][0])
             for j in range(NbreEq):
-                res[i][1][j] = int(res[i][1][0])
-                res[i][1][j] = int(res[i][1][1])
+                res[i][1][j] = int(res[i][1][j])
         MultiEq = res
+        
         return MultivariateEquations(MultiEq, result, NbreEq)
 
     # Evaluate the equation given a vector Sum: (b * Product pow(x_i, k_i)), where x_i belongs to vector
