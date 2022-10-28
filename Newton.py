@@ -15,6 +15,12 @@ from polynomials import *
 from trigono import *
 from multivariate_systems import *
 import sys
+#import matplotlib.pyplot as plt
+
+# Epsilon to check if value found by Naive Newton is correct
+EPS = 0.1
+# Max iteration allowed for Naive Newton
+MAX_ITER = 40
 
 # ---------------------------------------------------------------------------
 # Start of functions related to newton-method for simple equation
@@ -24,13 +30,19 @@ import sys
 def compute_convergence(steps):
     s = ""
     i = 1
+    pre_list = []
     for step in steps:
         if step[1] == "N":
             m = "Newton"
         else:
             m = "Bisection"
 
-        pre_won = round(math.log10(abs(step[0]/step[2])), 1)
+        try:
+            pre_won = round(math.log10(abs(step[0]/step[2])), 1)
+            pre_list.append(pre_won)
+        except:
+            pre_won = 0
+
         if pre_won < 0:
             l = "lost"
         else:
@@ -39,6 +51,10 @@ def compute_convergence(steps):
         i += 1
 
     print(s)
+
+    # allow to show a plot of the convergence (uncomment matplotlib as well to use)
+    #plt.plot(range(1, len(pre_list)+1), pre_list)
+    #plt.show()
 
 
 # Function that given function f and point a will try to find a value b such that f(a) * f(b) < 0
@@ -80,7 +96,7 @@ def newton_bisect_notsys(f, a, b):
     deriv = f.derivate()
 
     steps = []
-    while abs(f.evaluate(x)) > pow(10, -10):
+    while abs(f.evaluate(x)) > pow(10, -14):
         step = [f.evaluate(x)]
         x = newton_step(f, deriv, x)
         step.append("N")
@@ -108,7 +124,7 @@ def naive_newton_notsys(f, a):
 
     steps = []
     # No guarantee of convergence so we're forced to iterate for a given number of steps, else we risk infinite loop
-    for i in range(40):
+    for i in range(MAX_ITER):
         step = [f.evaluate(a)]
         a = newton_step(f, deriv, a)
         step.append("N")
@@ -116,7 +132,8 @@ def naive_newton_notsys(f, a):
         if a is None:
             return None, None
         steps.append(step)
-    if abs(f.evaluate(a)) < 0.001:
+
+    if abs(f.evaluate(a)) < EPS:
         return None, None
         
     return a, steps
@@ -153,7 +170,7 @@ def newton_sys(s, vector):
     if len(vector) != s.N:
         raise Exception("vector size doesn't match number of unknowns to be used in Newton method")
 
-    for i in range(40):
+    for i in range(MAX_ITER):
         J = s.jacobian_matrix_at(vector)
         F = s.evaluate(vector)
 
@@ -166,7 +183,7 @@ def newton_sys(s, vector):
 
         vector = np.subtract(vector, X)
 
-    if not all(abs(i) < 0.001 for i in s.evaluate(vector)):
+    if not all(abs(i) < EPS for i in s.evaluate(vector)):
         print("Newton method couldn't converge for the given vector, systems might not have solution in real set")
         return None
 
@@ -212,9 +229,8 @@ def menu_polynomial():
             return
 
         elif ans == "2":
-            NameFile = input("please enter the file name")
-            file = open(NameFile, 'r')
-            # file_equation = file.readline()
+            nameFile = input("please enter the file name")
+            file = open(nameFile, 'r')
             a = int(input("Enter first starting point for Newton-Bisect method (a) "))
             b = int(input("Enter second starting point for Newton-Bisect method (b) "))
             for line in file:
@@ -271,23 +287,22 @@ def menu_trigono():
             return
 
         elif ans == "2":
-            NameFile = input("please enter the file name")
-            file = open(NameFile, 'r')
-            # file_equation = file.readline()
+            nameFile = input("please enter the file name")
+            file = open(nameFile, 'r')
             a = int(input("Enter first starting point for Newton-Bisect method (a)"))
             b = int(input("Enter second starting point for Newton-Bisect method (b)"))
             for line in file:
 
-                TrigoEQ = TrigoEquation.read_equation_trigo(line)
-                print(TrigoEQ)
+                trigoEQ = TrigoEquation.read_equation_trigo(line)
+                print(trigoEQ)
                 print("Solving...")
-                r, steps = newton_notsys(TrigoEQ, a, b)
+                r, steps = newton_notsys(trigoEQ, a, b)
                 if r is None:
                     print("Couldn't find roots for given equation...")
                 else:
-                    print("Found solution for :" + str(TrigoEQ))
+                    print("Found solution for :" + str(trigoEQ))
                     print("x = " + str(r))
-                    print("Value of equation for found x : " + str(TrigoEQ.evaluate(r)))
+                    print("Value of equation for found x : " + str(trigoEQ.evaluate(r)))
                     print("Convergence checking :")
                     compute_convergence(steps)
             file.close()
@@ -330,25 +345,25 @@ def menu_system():
             return
 
         elif ans == "2":
-            NameFile = input("please enter the file name")
-            file = open(NameFile, 'r')
+            nameFile = input("please enter the file name")
+            file = open(nameFile, 'r')
             vector = []
             for line in file:
-                NbrEq = int(line)
-                for i in range(NbrEq):
+                nbEq = int(line)
+                for i in range(nbEq):
                     vector.append(int(input(f'Enter the {i}-th value for the starting vector')))
                 print(vector)
-                MultiSys = MultivariateSystem.read_system(NbrEq, file)
-                print(MultiSys)
+                multiSys = MultivariateSystem.read_system(nbEq, file)
+                print(multiSys)
                 print("Solving...")
-                r = newton_sys(MultiSys, vector)
+                r = newton_sys(multiSys, vector)
                 vector.clear()
                 if r is None:
                     print("Couldn't find roots for given equation...")
                 else:
-                    print("Found solution for :" + str(MultiSys))
+                    print("Found solution for system")
                     print("x = " + str(r))
-                    print("Value of equation for found x : " + str(MultiSys.evaluate(r)))
+                    print("Value of equation for found x : " + str(multiSys.evaluate(r)))
             file.close()
             
             return

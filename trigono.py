@@ -49,20 +49,6 @@ class TrigoEquation:
         
         return derivative
 
-    def read_equation_trigo(file_equation):
-
-        res = file_equation.split('; ')
-        result = res.pop()
-        result = int(result)
-        for i in range(len(res)):
-            res[i] = res[i].strip('][').split(',')
-            res[i][0] = int(res[i][0])
-            res[i][1] = int(res[i][1])
-            res[i][2] = int(res[i][2])
-
-        trigoEQ = res
-        return TrigoEquation(trigoEQ, result)
-
     # Function evaluating an equation at point x
     def evaluate(self, x):
         value = 0
@@ -82,6 +68,22 @@ class TrigoEquation:
             eq.append([rand.randint(-10, 10), rand.randint(0, 1), rand.randint(0, 10)])
 
         return TrigoEquation(eq, rand.randint(-n, n))
+
+    # Class method that reads equation from file and return the equation
+    @classmethod
+    def read_equation_trigo(cls, file_equation):
+
+        res = file_equation.split('; ')
+        result = res.pop()
+        result = int(result)
+        for i in range(len(res)):
+            res[i] = res[i].strip('][').split(',')
+            res[i][0] = int(res[i][0])
+            res[i][1] = int(res[i][1])
+            res[i][2] = int(res[i][2])
+
+        trigoEQ = res
+        return TrigoEquation(trigoEQ, result)
 
     # Function printing the equation in a pretty way
     def __str__(self):

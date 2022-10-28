@@ -1,0 +1,30 @@
+-Polynomial file format:
+
+[coeff, pow]; [coeff, pow]; ... ; [coeff, power]; result
+which translate to => coeff * x^pow + ... coeff * x^pow = result
+
+coeff, pow and result should be integer
+
+
+-Trigo file format:
+
+[term_coeff, fun, fun_coeff]; [term_coeff, fun, fun_coeff]; ... [term_coeff, fun, fun_coeff]; result
+which translate to => term_coeff * fun(fun_coeff * x) + ... + term_coeff * fun(fun_coeff * x) = result
+
+term_coeff and fun_coeff should be integer, fun = 0 for sin, fun = 1 for cos
+
+
+-System file format:
+
+N
+coeff* [a_1,...,a_N]; coeff* [a_1,...,a_N]; ... ; coeff* [a_1,...,a_N]; result
+.
+.
+.
+coeff* [a_1,...,a_N]; coeff* [a_1,...,a_N]; ... ; coeff* [a_1,...,a_N]; result
+any line after N is an equation which translate to => coeff * x^a_1 * ... * x^a_N + ... + coeff * x^a_1 * ... * x^a_N = result
+
+N, coeff, result and any a_i should be integers.
+N is the number of equations and unknowns, any array [a_1,...a_n] should be of size N and represent the power of each unknowns
+in order x_0, x_1,..., x_N
+

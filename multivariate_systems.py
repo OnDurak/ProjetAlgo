@@ -55,22 +55,6 @@ class MultivariateEquations:
 
         return evaluatedJacVector
 
-    def read_multi_eq(file, NbreEq):
-        file_equation = file.readline()
-        res = file_equation.split('; ')
-        result = res.pop()
-        result = int(result)
-        for i in range(len(res)):
-            res[i] =  res[i].split('* ')
-            res[i][1] = res[i][1].strip('][').split(',')
-            
-            res[i][0] = int(res[i][0])
-            for j in range(NbreEq):
-                res[i][1][j] = int(res[i][1][j])
-        MultiEq = res
-        
-        return MultivariateEquations(MultiEq, result, NbreEq)
-
     # Evaluate the equation given a vector Sum: (b * Product pow(x_i, k_i)), where x_i belongs to vector
     def evaluate(self, eq, vector):
         sum = 0
@@ -105,6 +89,24 @@ class MultivariateEquations:
             eq.append([rand.randint(-10, 10), exp])
 
         return MultivariateEquations(eq, rand.randint(-10, 10), N)
+
+    # Class method that returns an equation of system from a file
+    @classmethod
+    def read_multi_eq(cls, file, nbEq):
+        file_equation = file.readline()
+        res = file_equation.split('; ')
+        result = res.pop()
+        result = int(result)
+        for i in range(len(res)):
+            res[i] = res[i].split('* ')
+            res[i][1] = res[i][1].strip('][').split(',')
+
+            res[i][0] = int(res[i][0])
+            for j in range(nbEq):
+                res[i][1][j] = int(res[i][1][j])
+        MultiEq = res
+
+        return MultivariateEquations(MultiEq, result, nbEq)
 
     # Function printing the equation in a pretty way
     def __str__(self):
@@ -154,19 +156,6 @@ class MultivariateSystem:
 
         return J
 
-
-    def read_system(nbrEq, file):
-
-        system = []
-        for i in range(nbrEq):
-            system.append(MultivariateEquations.read_multi_eq(file, nbrEq))
-        
-        m = MultivariateSystem()
-        m.N = nbrEq
-        m.sys = system
-            
-        return m
-
     def evaluate(self, vector):
         F = []
         for eq in self.sys:
@@ -184,6 +173,20 @@ class MultivariateSystem:
         m = MultivariateSystem()
         m.N = n
         m.sys = sys
+
+        return m
+
+    # Class method that returns a system read by file
+    @classmethod
+    def read_system(cls, nbEq, file):
+
+        system = []
+        for i in range(nbEq):
+            system.append(MultivariateEquations.read_multi_eq(file, nbEq))
+
+        m = MultivariateSystem()
+        m.N = nbEq
+        m.sys = system
 
         return m
 
